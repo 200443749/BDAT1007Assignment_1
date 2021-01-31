@@ -79,20 +79,25 @@ The above copyright notice and this permission notice shall be included in all c
         <div class="container-fluid">
           <div class="row">
             <div class="col-md-12">
-              <form enctype = "multipart/form-data" action = "http://localhost:5000/formpost" method = "post">
+              <form enctype = "multipart/form-data" action = "/formpost" method = "post">
                 <div class="card">
                   <div class="card-header card-header-primary">
-                    <h4 class="card-title">CREATE</h4>
-                    <p class="card-category">Add New Entry</p>
+                    <h4 class="card-title">Add Guitar Info</h4>
                   </div>
                   <div class="card-body">
                     <form>
                       <div class="row">
                         <div class="col-md-12">
+                          <div class="form-group">
                             <div class="form-group">
-                              <label class="bmd-label-floating">Category</label>
-                              <input type="text" class="form-control" name="Category">
+                              <label for="exampleFormControlSelect1">Select Guitar Category</label>
+                              <select class="form-control" id="exampleFormControlSelect1" name="Category">
+                                {% for item in category_list%}
+                                <option value="{{item}}">{{item}}</option>
+                               {% endfor %}
+                              </select>
                             </div>
+                          </div>
                           </div>
                         <div class="col-md-12">
                           <div class="form-group">
@@ -103,7 +108,7 @@ The above copyright notice and this permission notice shall be included in all c
                         <div class="col-md-12">
                           <div class="form-group">
                             <label class="bmd-label-floating">Price</label>
-                            <input type="number" class="form-control" name="Price">
+                            <input type="text" class="form-control" name="Price">
                           </div>
                         </div>
                       </div>
@@ -111,13 +116,13 @@ The above copyright notice and this permission notice shall be included in all c
                         <div class="col-md-6">
                           <div class="form-group">
                             <label class="bmd-label-floating">Maximum Retail Price</label>
-                            <input type="number" class="form-control" name="maxprice">
+                            <input type="text" class="form-control" name="maxprice">
                           </div>
                         </div>
                         <div class="col-md-6">
                           <div class="form-group">
                             <label class="bmd-label-floating">Lowest Price</label>
-                            <input type="number" class="form-control" name="lowprice">
+                            <input type="text" class="form-control" name="lowprice">
                           </div>
                         </div>
                       </div>
@@ -125,7 +130,7 @@ The above copyright notice and this permission notice shall be included in all c
                         <div class="col-md-12">
                           <div class="form-group">
                             <label class="bmd-label-floating">Ratings</label>
-                            <input type="number" class="form-control" name="ratings">
+                            <input type="text" class="form-control" name="ratings">
                           </div>
                         </div>
                       </div>
@@ -133,7 +138,7 @@ The above copyright notice and this permission notice shall be included in all c
                         <div class="col-md-4">
                           <div class="form-group">
                             <label class="bmd-label-floating">No. of Reviews</label>
-                            <input type="number" class="form-control" name="reviews">
+                            <input type="text" class="form-control" name="reviews">
                           </div>
                         </div>
                       </div>
