@@ -1,50 +1,67 @@
-from bs4 import BeautifulSoup
+from flask import Flask, render_template, session, request, redirect
+from flask import Flask, jsonify, render_template, url_for
+from flask.templating import render_template_string
+from pymongo import MongoClient
+import os
 import pandas as pd
 import csv
 import requests
-urls=["https://www.guitarcenter.com/Guitars.gc#pageName=department-page&N=18144&Nao=0&recsPerPage=90&&Ns=bS&profileCountryCode=CA&profileCurrencyCode=CAD","https://www.guitarcenter.com/Guitars.gc#pageName=department-page&N=18144&Nao=90&recsPerPage=90&&Ns=bS&profileCountryCode=CA&profileCurrencyCode=CAD","https://www.guitarcenter.com/Guitars.gc#pageName=department-page&N=18144&Nao=180&recsPerPage=90&&Ns=bS&profileCountryCode=CA&profileCurrencyCode=CAD","https://www.guitarcenter.com/Guitars.gc#pageName=department-page&N=18144&Nao=270&recsPerPage=90&&Ns=bS&profileCountryCode=CA&profileCurrencyCode=CAD"]
-name_list=[]
-price_list=[]
-price_match_list=[]
-namee_list=[]
-review_list=[]
-rating=[]
-revieww_list=[]
-for i in range(len(urls)):
-    source=requests.get(urls[i])
-    soup=BeautifulSoup(source.text,'html')
-    gname=soup.find_all('div',class_='productTitle')
-    price=soup.find_all('div',class_='mainPrice')
-    ratings=soup.find_all('div',class_='ratingReviewsDisplayLinks')
-    # Guitar Name list
-    for i in gname:
-        a = i.find('a')
-        name_list.append(a.string)
-        namee_list=list(map(lambda x:x.strip(),name_list))
 
-    #Guitar actual price
-    for i in price:
-        p = i.find('span').contents[2]
-        price_list.append(p.string)
+app = Flask(__name__)
 
-    #Guitar MRP and low price list
-    for j in price:
-        b=j.find('var')
-        price_match_list.append(b.string)
+client = MongoClient("mongodb+srv://binay_99:Watson%4099@bdat1007.n5kgy.mongodb.net/test?authSource=admin&replicaSet=atlas-124cba-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true")
+db=client["Guitar"]
+mycol=db["Guitar_Info"]
 
-    #Guitar ratings list
-    for k in ratings:
-        c=k.find('span').contents[0]
-        rating.append(c.text)
+def csv_to_json(filename,header=None):
+    data = pd.read_csv(filename, header=header)
+    return data.to_dict('records')
 
-    #Guitar number of reviews
-    for l in ratings:
-        d=l.find('span').contents[1]
-        review_list.append(d.string)
-        revieww_list=list(map(lambda x:x.strip(),review_list))
+@app.route("/")
+def index():
+    guitar_list=mycol.find()
+    return render_template('index.html',guitar_list = guitar_list)
 
-df = pd.DataFrame({'Name': namee_list,'Price':price_list,'Price_match':price_match_list,'Ratings':rating,'reviews':revieww_list})
-df.to_csv('guitar_data.csv')
+@app.route('/fileupload')
+def upload_file():
+   return render_template('fileupload.html')
 
+@app.route("/uploader",methods=['POST','GET'])
+def fileupload():
+    if request.method == 'POST':
+        f = request.files['filename']
+        if f.filename != '':
+            f.save(f.filename)
+            mycol.insert_many(csv_to_json(f.filename,header=0))
+            return "file uploaded successfully"
+    else:
+        return render_template('fileupload.html')
+@app.route("/form")
+def form():
+    category_list=mycol.distinct("Category")
+    return render_template('form.html',category_list=category_list)
+
+@app.route("/formpost",methods=['POST','GET'])
+def formpost():
+    if request.method == 'POST':
+       category= request.form['Category']
+       name = request.form['Name']
+       price = request.form['Price']
+       mrp = request.form['maxprice']
+       lprice = request.form['lowprice']
+       ratings = request.form['ratings']
+       reviews = request.form['reviews']
+       mydict = {"Category":category,"Name":name,"PRICE":price,"MSRP":mrp,"LOWPRICE":lprice,"RATINGS":ratings,"REVIEWS":reviews}
+       message=''
+       try:
+           mycol.insert_one(mydict)
+           message="Data added successfully!"
+       except:
+            message="Something else gone wrong!!"
+            return message
+       guitar_list=mycol.find()
+       return render_template('index.html',message=message,guitar_list=guitar_list)
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
