@@ -14,6 +14,8 @@ client = MongoClient("mongodb+srv://binay_99:Watson%4099@bdat1007.n5kgy.mongodb.
 db=client["Guitar"]
 mycol=db["Guitar_Info"]
 mycategory=db["Guitar_Category"]
+
+# CSV file to MongoDB
 def csv_to_json(filename,header=None):
     data = pd.read_csv(filename, header=header)
     return data.to_dict('records')
